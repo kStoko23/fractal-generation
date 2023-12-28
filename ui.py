@@ -54,7 +54,7 @@ class FractalApp(tk.Tk):
         )
         self.generate_button.pack()
         self.reset_zoom_button = ttk.Button(
-            self.sidebar, text="Reset Zoom", command=self.reset_zoom
+            self.sidebar, text="Resetuj przybliżenie", command=self.reset_zoom
         )
         self.reset_zoom_button.pack()
         ttk.Label(self.sidebar, text="Wybierz paletę kolorów:").pack()
