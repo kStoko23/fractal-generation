@@ -13,10 +13,15 @@ class FractalApp(tk.Tk):
         self.geometry("800x600")
 
         self.default_zoom_factor = 1
+        self.zoom_factor = self.default_zoom_factor
         self.default_center_x = 0
+        self.center_x = self.default_center_x
         self.default_center_y = 0
+        self.center_y = self.default_center_y
         self.default_xmin, self.default_xmax = -2, 1.5
         self.default_ymin, self.default_ymax = -2, 2
+
+        self.colormap_choice = tk.StringVar(value="hot")
 
         self.canvas = None
         self.create_widgets()
@@ -44,14 +49,23 @@ class FractalApp(tk.Tk):
             ttk.Radiobutton(
                 self.sidebar, text=text, variable=self.fractal_choice, value=mode
             ).pack()
-        self.reset_zoom_button = ttk.Button(
-            self.sidebar, text="Reset Zoom", command=self.reset_zoom
-        )
-        self.reset_zoom_button.pack()
         self.generate_button = ttk.Button(
             self.sidebar, text="Generuj", command=self.generate_fractal
         )
         self.generate_button.pack()
+        self.reset_zoom_button = ttk.Button(
+            self.sidebar, text="Reset Zoom", command=self.reset_zoom
+        )
+        self.reset_zoom_button.pack()
+        ttk.Label(self.sidebar, text="Wybierz paletę kolorów:").pack()
+        colormap_options = ["seismic", "hot", "pink", "hsv", "twilight_shifted"]
+        colormap_menu = ttk.OptionMenu(
+            self.sidebar,
+            self.colormap_choice,
+            self.colormap_choice.get(),
+            *colormap_options
+        )
+        colormap_menu.pack()
 
     def reset_zoom(self):
         self.zoom_factor = self.default_zoom_factor
@@ -75,7 +89,7 @@ class FractalApp(tk.Tk):
             fig = generate_mandelbrot(
                 iterations=iterations,
                 power=2,
-                colormap="twilight_shifted",
+                colormap=self.colormap_choice.get(),
                 zoom_factor=self.zoom_factor,
                 center_x=self.center_x,
                 center_y=self.center_y,
@@ -85,7 +99,7 @@ class FractalApp(tk.Tk):
             fig = generate_julia(
                 center=julia_center,
                 interations=iterations,
-                colormap="seismic",
+                colormap=self.colormap_choice.get(),
                 zoom_factor=self.zoom_factor,
                 center_x=self.center_x,
                 center_y=self.center_y,
