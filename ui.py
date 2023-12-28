@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from fractal_generation.mandelbrot_set import generate_mandelbrot
+from fractal_generation.julia_set import generate_julia
 
 
 class FractalApp(tk.Tk):
@@ -11,14 +12,11 @@ class FractalApp(tk.Tk):
         self.title("Fractal Generator")
         self.geometry("800x600")
 
-        # Ustawienia początkowe dla zoomowania
-        self.zoom_factor = 1
-        self.center_x = 0
-        self.center_y = 0
-
-        # Ustawienia początkowe dla zakresów
-        self.xmin, self.xmax = -2, 1.5
-        self.ymin, self.ymax = -2, 2
+        self.default_zoom_factor = 1
+        self.default_center_x = 0
+        self.default_center_y = 0
+        self.default_xmin, self.default_xmax = -2, 1.5
+        self.default_ymin, self.default_ymax = -2, 2
 
         self.canvas = None
         self.create_widgets()
@@ -36,7 +34,7 @@ class FractalApp(tk.Tk):
         ttk.Label(self.sidebar, text="Liczba Iteracji:").pack()
 
         self.iteration_entry = ttk.Entry(self.sidebar)
-        self.iteration_entry.insert(0, "100")  # Wartość domyślna
+        self.iteration_entry.insert(0, "100")
         self.iteration_entry.pack()
 
         self.fractal_choice = tk.StringVar(value="mandelbrot")
@@ -46,11 +44,22 @@ class FractalApp(tk.Tk):
             ttk.Radiobutton(
                 self.sidebar, text=text, variable=self.fractal_choice, value=mode
             ).pack()
-
+        self.reset_zoom_button = ttk.Button(
+            self.sidebar, text="Reset Zoom", command=self.reset_zoom
+        )
+        self.reset_zoom_button.pack()
         self.generate_button = ttk.Button(
             self.sidebar, text="Generuj", command=self.generate_fractal
         )
         self.generate_button.pack()
+
+    def reset_zoom(self):
+        self.zoom_factor = self.default_zoom_factor
+        self.center_x = self.default_center_x
+        self.center_y = self.default_center_y
+        self.xmin, self.xmax = self.default_xmin, self.default_xmax
+        self.ymin, self.ymax = self.default_ymin, self.default_ymax
+        self.generate_fractal()
 
     def clear_canvas(self):
         if self.canvas:
@@ -66,29 +75,37 @@ class FractalApp(tk.Tk):
             fig = generate_mandelbrot(
                 iterations=iterations,
                 power=2,
-                colormap="hot",
+                colormap="twilight_shifted",
                 zoom_factor=self.zoom_factor,
                 center_x=self.center_x,
                 center_y=self.center_y,
             )
-            self.canvas = FigureCanvasTkAgg(fig, master=self.display_area)
-            canvas_widget = self.canvas.get_tk_widget()
-            canvas_widget.pack(fill=tk.BOTH, expand=True)
-            self.canvas.draw()
-            self.canvas.mpl_connect("button_press_event", self.on_click)
+        elif chosen_fractal == "julia":
+            julia_center = -0.05 - 0.66j
+            fig = generate_julia(
+                center=julia_center,
+                interations=iterations,
+                colormap="seismic",
+                zoom_factor=self.zoom_factor,
+                center_x=self.center_x,
+                center_y=self.center_y,
+            )
+        self.canvas = FigureCanvasTkAgg(fig, master=self.display_area)
+        canvas_widget = self.canvas.get_tk_widget()
+        canvas_widget.pack(fill=tk.BOTH, expand=True)
+        self.canvas.draw()
+        self.canvas.mpl_connect("button_press_event", self.on_click)
 
     def on_click(self, event):
         if event.inaxes is not None:
-            # Lewy przycisk myszy (LPM) - przybliżenie
             if event.button == 1:
                 self.center_x, self.center_y = event.xdata, event.ydata
-                self.zoom_factor /= 2  # Zwiększanie przybliżenia
+                self.zoom_factor /= 2
                 self.generate_fractal()
 
-            # Prawy przycisk myszy (PPM) - oddalanie
             elif event.button == 3:
                 self.center_x, self.center_y = event.xdata, event.ydata
-                self.zoom_factor *= 2  # Zmniejszanie przybliżenia
+                self.zoom_factor *= 2
                 self.generate_fractal()
 
     def zoom_in(self):
