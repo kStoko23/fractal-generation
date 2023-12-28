@@ -39,10 +39,11 @@ def generate_mandelbrot(
     fig = Figure(figsize=(5, 4))
     ax = fig.add_subplot(111)
     ax.set_aspect("equal")
-    ax.pcolormesh(xDomain, yDomain, iterationArray, cmap=colormap)
+    plot = ax.pcolormesh(xDomain, yDomain, iterationArray, cmap=colormap)
     ax.set_xlabel("Real-Axis")
     ax.set_ylabel("Imaginary-Axis")
     title = f"Multibrot set for $z_{{new}} = z^{{{power}}} + c$ with {iterations} iterations, zoom {zoom_factor}"
     ax.set_title(title)
+    fig.colorbar(plot)
 
     return fig
